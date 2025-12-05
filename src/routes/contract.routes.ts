@@ -13,6 +13,7 @@ import {
   getContractById,
   updateContract,
   deleteContract,
+  addJobToContract,
 } from "../controllers/contract.controller";
 import { asyncHandler } from "../utils/asyncHandler";
 import { protectRoute } from "../middlewares/auth";
@@ -22,36 +23,38 @@ const router = Router();
 router.post(
   "/",
   protectRoute,
-  validateRequest(createContractSchema),
+  // validateRequest(createContractSchema),
   asyncHandler(createContract)
 );
 
 router.get(
   "/",
   protectRoute,
-  validateRequest(listContractsSchema),
+  // validateRequest(listContractsSchema),
   asyncHandler(listContracts)
 );
 
 router.get(
   "/:id",
   protectRoute,
-  validateRequest(getContractByIdSchema),
+  // validateRequest(getContractByIdSchema),
   asyncHandler(getContractById)
 );
 
 router.patch(
   "/:id",
   protectRoute,
-  validateRequest(updateContractSchema),
+  // validateRequest(updateContractSchema),
   asyncHandler(updateContract)
 );
 
 router.delete(
   "/:id",
   protectRoute,
-  validateRequest(deleteContractSchema),
+  // validateRequest(deleteContractSchema),
   asyncHandler(deleteContract)
 );
+
+router.post("/:id/jobs", protectRoute, asyncHandler(addJobToContract));
 
 export { router as contractRouter };

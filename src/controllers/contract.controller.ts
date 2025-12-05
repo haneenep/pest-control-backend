@@ -13,7 +13,7 @@ export const listContracts = async (req: Request, res: Response) => {
   const result = await service.list({
     page: Number(page),
     limit: Number(limit),
-    search: search as string
+    search: search as string,
   });
 
   res.json({ success: true, ...result });
@@ -32,4 +32,17 @@ export const updateContract = async (req: Request, res: Response) => {
 export const deleteContract = async (req: Request, res: Response) => {
   await service.delete(req.params.id!);
   res.status(204).send();
+};
+
+export const addJobToContract = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const jobData = req.body;
+
+  const contract = await service.addJobToContract(id!, jobData);
+
+  return res.status(201).json({
+    success: true,
+    message: "Job added successfully",
+    data: contract,
+  });
 };
