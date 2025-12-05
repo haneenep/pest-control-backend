@@ -1,4 +1,4 @@
-import { Contract } from "../model/contract.model";
+import { Contract, JobType } from "../model/contract.model";
 import { AppError } from "../utils/AppError";
 
 export class ContractService {
@@ -70,5 +70,17 @@ export class ContractService {
         statusCode: 404,
       });
     }
+  }
+
+  async addJobToContract(id: string, jobData: JobType) {
+    const contract = await Contract.findById(id);
+    if (!contract) {
+      throw new AppError({ message: "Contract not found", statusCode: 404 });
+    }
+
+    contract.jobs.push(jobData);
+
+    await contract.save();
+    return contract;
   }
 }

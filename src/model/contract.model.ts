@@ -9,6 +9,44 @@ export interface Address {
   country: string;
 }
 
+export interface ServiceProduct {
+  serviceType: "building_cleaning" | "tanks_containers_cleaning" | "disinfection_sterilization" | "pest_control";
+  instructions: string;
+  units: number;
+  rate: number;
+  subtotalPerYear: number;
+  frequencyDays: number;
+  isEveryDay: boolean;
+}
+
+export interface InvoiceReminder {
+  startDate: Date;
+  endDate: Date;
+  isAdvanceInvoice: boolean;
+  invoiceAfterJobsClosed: boolean;
+  billingFrequency: "monthly" | "quarterly" | "semi_annually" | "annually";
+}
+
+export interface JobType {
+  jobType: "recurring" | "one_off";
+  contractDate: Date;
+  startDate: Date;
+  endDate: Date;
+  contractedBy: string; // Employee ID or name
+  expiryRemindBefore: number; // Days before expiry
+  isTaxExempt: boolean;
+  
+  invoiceReminder: InvoiceReminder;
+  servicesProducts: ServiceProduct[];
+  
+  subtotal: number;
+  vat: number; // 5% of subtotal
+  grandTotal: number;
+  
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ContractDocument extends Document {
   title: string;
   aliasName: string;
@@ -22,10 +60,9 @@ export interface ContractDocument extends Document {
   quoteValidityDays: number;
   creditLimit: number;
 
-  priority: "low" | "medium" | "high" | "urgent";
-  paymentTerms: "15" | "30" | "45" | "60" | "90";
-
   remarks: string;
+  
+  jobs: JobType[]; // Array of jobs associated with this contract
 
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +80,63 @@ const addressSchema = new Schema<Address>(
   { _id: false }
 );
 
+const serviceProductSchema = new Schema<ServiceProduct>(
+  {
+    serviceType: {
+      type: String,
+      enum: ["building_cleaning", "tanks_containers_cleaning", "disinfection_sterilization", "pest_control"],
+      required: true,
+    },
+    instructions: { type: String, default: "" },
+    units: { type: Number, required: true, min: 0 },
+    rate: { type: Number, required: true, min: 0 },
+    subtotalPerYear: { type: Number, required: true, min: 0 },
+    frequencyDays: { type: Number, required: true, min: 1 },
+    isEveryDay: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const invoiceReminderSchema = new Schema<InvoiceReminder>(
+  {
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    isAdvanceInvoice: { type: Boolean, default: false },
+    invoiceAfterJobsClosed: { type: Boolean, default: false },
+    billingFrequency: {
+      type: String,
+      enum: ["monthly", "quarterly", "semi_annually", "annually"],
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
+const jobSchema = new Schema<JobType>(
+  {
+    jobType: {
+      type: String,
+      enum: ["recurring", "one_off"],
+      required: true,
+    },
+    contractDate: { type: Date, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    contractedBy: { type: String, required: true },
+    expiryRemindBefore: { type: Number, required: true, min: 0 },
+    isTaxExempt: { type: Boolean, default: false },
+    
+    invoiceReminder: { type: invoiceReminderSchema, required: true },
+    servicesProducts: { type: [serviceProductSchema], required: true },
+    
+    subtotal: { type: Number, required: true, min: 0 },
+    vat: { type: Number, required: true, min: 0 },
+    grandTotal: { type: Number, required: true, min: 0 },
+    
+  },
+  { timestamps: true }
+);
+
 const contractSchema = new Schema<ContractDocument>(
   {
     title: { type: String, required: true },
@@ -58,19 +152,9 @@ const contractSchema = new Schema<ContractDocument>(
     quoteValidityDays: { type: Number, required: true },
     creditLimit: { type: Number, required: true },
 
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high", "urgent"],
-      required: true,
-    },
-
-    paymentTerms: {
-      type: String,
-      enum: ["15", "30", "45", "60", "90"],
-      required: true,
-    },
-
     remarks: { type: String, required: true },
+    
+    jobs: { type: [jobSchema], default: [] },
   },
   {
     timestamps: true,
