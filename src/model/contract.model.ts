@@ -47,7 +47,7 @@ export interface JobType {
   subtotal: number;
   vat: number; // 5% of subtotal
   grandTotal: number;
-
+  status: "pending" | "completed" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -139,7 +139,7 @@ const jobSchema = new Schema<JobType>(
 
     invoiceReminder: { type: invoiceReminderSchema, required: true },
     servicesProducts: { type: [serviceProductSchema], required: true },
-
+    status: {type: String, enum: ["pending", "completed", "cancelled"], default: "pending" },
     subtotal: { type: Number, required: true, min: 0 },
     vat: { type: Number, required: true, min: 0 },
     grandTotal: { type: Number, required: true, min: 0 },
